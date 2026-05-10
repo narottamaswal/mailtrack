@@ -1,0 +1,16 @@
+services:
+  backend:
+    env_file: .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - my-network
+#    environment:
+#      SPRING_PROFILES_ACTIVE: prod
+
+networks:
+  my-network:
+    driver: bridge

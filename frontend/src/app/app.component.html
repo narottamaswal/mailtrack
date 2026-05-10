@@ -1,0 +1,51 @@
+
+<nav class="navbar">
+    <div class="nav-inner">
+        <a routerLink="/campaigns" class="nav-brand">MailTrack</a>
+
+        <ng-container *ngIf="auth.checked()">
+            <ng-container *ngIf="auth.user(); else loggedOut">
+                <div style="display: flex;gap: 10px;">
+                    <div class="nav-links">
+                        <a routerLink="/campaigns" routerLinkActive="active" class="nav-link">Campaigns</a>
+                        <a routerLink="/create" routerLinkActive="active" class="nav-link">+ New Campaign</a>
+                    </div>
+                    <div class="profile-wrap">
+                        <button class="profile-btn" (click)="toggleDropdown()">
+                            <img
+                                    [src]="auth.user()!.avatar || auth.user()!.picture"
+                                    [alt]="auth.user()!.name"
+                                    class="avatar-img"
+                            />
+                        </button>
+                        <div class="dropdown" [class.open]="dropdownOpen">
+                            <div class="dropdown-name">{{ auth.user()!.name }}</div>
+                            <div class="dropdown-email">{{ auth.user()!.email }}</div>
+                            <hr class="dropdown-divider" />
+                            <button class="dropdown-item" (click)="auth.signOut()">
+                                sign out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </ng-container>
+            <ng-template #loggedOut>
+                <button class="btn-signin" (click)="auth.signIn()">
+                    <svg width="16" height="16" viewBox="0 0 48 48">
+                        <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.2 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.6-8 19.6-20 0-1.3-.1-2.7-.4-4z"/>
+                        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34 6.5 29.3 4 24 4c-7.7 0-14.3 4.3-17.7 10.7z"/>
+                        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.5 26.8 36 24 36c-5.2 0-9.6-2.9-11.3-7.1l-6.6 4.8C9.8 40 16.4 44 24 44z"/>
+                        <path fill="#1565C0" d="M43.6 20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.2 5.2C41.1 35.7 44 30.3 44 24c0-1.3-.1-2.7-.4-4z"/>
+                    </svg>
+                    Sign in
+                </button>
+            </ng-template>
+
+        </ng-container>
+    </div>
+
+</nav>
+
+<div >
+    <router-outlet />
+</div>`

@@ -1,0 +1,139 @@
+<div class="page" *ngIf="auth.user()">
+  <div class="container">
+    <div style="margin-bottom:12px">
+      <a routerLink="/campaigns" class="text-small text-muted" style="text-decoration:none">← Campaigns</a>
+    </div>
+    @if (loading()) {
+        <div class="notice">Loading...</div>
+    }
+    @if (!loading() && error()) {
+        <div class="notice notice-error">{{ error() }}</div>
+    }
+    @if (!loading() && !error() && campaign(); as c) {
+      <div class="flex items-center justify-between mb-2" style="margin-bottom:20px">
+        <div>
+          <div class="page-title">{{ c.name || c.campaignId }}</div>
+          <div class="page-sub">
+            Campaign ID: <code>{{ c.campaignId }}</code> · Created {{ fmt(c.createdAt) }}
+          </div>
+        </div>
+        <button class="btn btn-primary" (click)="createItem()" [disabled]="creating()">
+          @if (creating()) {
+              Creating...
+          } @else {
+              + Create Item
+          }
+        </button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+
+        <div class="section-box" [class.section-enabled]="c.emailOpenEnabled" [class.section-disabled]="!c.emailOpenEnabled">
+          <div class="section-box__head">
+            <span class="section-box__title">Email Open Tracking</span>
+            <span [class]="c.emailOpenEnabled ? 'badge badge-on' : 'badge badge-off'">{{ c.emailOpenEnabled ? 'Enabled' : 'Disabled' }}</span>
+          </div>
+          <div class="section-box__body text-small text-muted">
+            @if (c.emailOpenEnabled) {
+                Streaming GIF pixel — records opens and view duration.
+            }
+            @else {
+                Not configured for this campaign.
+            }
+          </div>
+        </div>
+
+        <div class="section-box" [class.section-enabled]="c.timeTrackerEnabled" [class.section-disabled]="!c.timeTrackerEnabled">
+          <div class="section-box__head">
+            <span class="section-box__title">Time Tracking</span>
+            <span [class]="c.timeTrackerEnabled ? 'badge badge-on' : 'badge badge-off'">{{ c.timeTrackerEnabled ? 'Enabled' : 'Disabled' }}</span>
+          </div>
+          <div class="section-box__body text-small text-muted">
+            @if (c.timeTrackerEnabled) { Measures exact view duration via streaming connection. }
+            @else { Not configured for this campaign. }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Redirect link configs -->
+      @if (c.redirectLinkConfigs.length > 0) {
+        <div class="section-box" style="margin-bottom:14px">
+          <div class="section-box__head">
+            <span class="section-box__title">Redirect Link Templates ({{ c.redirectLinkConfigs.length }})</span>
+            <span class="text-small text-muted">These are cloned per item on creation</span>
+          </div>
+          <div class="section-box__body">
+            <table>
+              <thead><tr><th>Label</th><th>Original URL</th><th>Password</th><th>View Once</th><th>No Forward</th></tr></thead>
+              <tbody>
+                @for (r of c.redirectLinkConfigs; track r.id) {
+                  <tr>
+                    <td>{{ r.label }}</td>
+                    <td class="mono">{{ r.originalUrl }}</td>
+                    <td>{{ r.isPasswordProtected ? '🔒 Yes' : 'No' }}</td>
+                    <td>{{ r.viewOnce ? 'Yes' : 'No' }}</td>
+                    <td>{{ r.noForwarding ? 'Yes' : 'No' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- Items -->
+      <div class="section-box">
+        <div class="section-box__head">
+          <span class="section-box__title">Items ({{ c.items.length }})</span>
+          <span class="text-small text-muted">One item per email send. Click ID to view analytics.</span>
+        </div>
+        <div class="section-box__body" style="padding:0">
+          @if (c.items.length === 0) {
+            <div class="empty-state" style="border:none;border-radius:0">
+              No items yet. Click "Create Item" to create the first one.
+            </div>
+          } @else {
+            <table>
+              <thead>
+                <tr>
+                  <th>Item ID</th>
+                  <th>Created</th>
+                  <th>Opens</th>
+                  <th>Sessions</th>
+                  <th>Avg Duration</th>
+                  <th>Links</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of c.items; track item.itemId) {
+                  <tr>
+                    <td>
+                      <a [routerLink]="['/campaigns', campaignId, 'items', item.itemId]"
+                         class="mono" style="text-decoration:none;color:#1d4ed8">
+                        {{ item.itemId }}
+                      </a>
+                    </td>
+                    <td class="text-small text-muted">{{ fmt(item.createdAt) }}</td>
+                    <td>{{ item.openCount }}</td>
+                    <td>{{ item.sessionCount }}</td>
+                    <td>{{ fmtDur(item.avgDurationSeconds) }}</td>
+                    <td>{{ item.redirectLinkCount }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-danger"
+                        [disabled]="deletingItem() === item.itemId"
+                        (click)="deleteItem(item.itemId)">
+                        @if (deletingItem() === item.itemId) { } @else { Delete }
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

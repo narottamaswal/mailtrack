@@ -1,0 +1,60 @@
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#fff">
+    <div style="width:100%;max-width:380px;border:1px solid #ddd;border-radius:4px;background:#fff">
+        <div style="padding:16px 20px;border-bottom:1px solid #eee;font-weight:700;font-size:15px">MailTrack</div>
+        @if (infoLoading()) {
+            <div class="notice" style="margin:20px">Loading...</div>
+        }
+        @if (!infoLoading() && infoError()) {
+            <div style="padding:32px 20px;text-align:center">
+                <div style="font-size:15px;font-weight:600;margin-bottom:6px">Link Unavailable</div>
+                <div class="text-small text-muted">{{ infoError() }}</div>
+            </div>
+        }
+        @if (!infoLoading() && !infoError() && info()?.isExpired) {
+            <div style="padding:32px 20px;text-align:center">
+                <div style="font-size:15px;font-weight:600;margin-bottom:6px">Link Expired</div>
+                <div class="text-small text-muted">This single-use link has already been accessed.</div>
+            </div>
+        }
+        @if (verified()) {
+            <div style="padding:32px 20px;text-align:center">
+                <div style="font-size:15px;font-weight:600;margin-bottom:6px">✓ Verified</div>
+                <div class="text-small text-muted">Redirecting...</div>
+            </div>
+        }
+
+        @if (!infoLoading() && !infoError() && !info()?.isExpired && !verified()) {
+            <div style="padding:20px">
+                <div style="font-size:14px;font-weight:600;margin-bottom:4px">
+                    {{ info()?.label || 'Protected Link' }}
+                </div>
+                <div class="text-small text-muted" style="margin-bottom:16px">
+                    This link requires a password.
+                    @if (info()?.isViewOnce) { It is single-use and will expire after access. }
+                </div>
+
+                <form [formGroup]="form" (ngSubmit)="verify()" novalidate style="display:flex;flex-direction:column;gap:10px">
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#555">Password</label>
+                        <input type="password"
+                               formControlName="password"
+                               placeholder="Enter password"
+                               autocomplete="current-password"
+                               [class.invalid]="verifyError()"
+                        >
+                        @if (verifyError()) {
+                            <div style="font-size:12px;color:#e33;margin-top:3px">{{ verifyError() }}</div>
+                        }
+                    </div>
+                    <button type="submit" class="btn btn-primary" [disabled]="form.invalid || verifying()">
+                        @if (verifying()) {
+                            Verifying...
+                        } @else {
+                            Unlock
+                        }
+                    </button>
+                </form>
+            </div>
+        }
+    </div>
+</div>

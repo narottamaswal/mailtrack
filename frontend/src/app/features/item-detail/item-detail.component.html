@@ -1,0 +1,174 @@
+<div class="page">
+  <div class="container">
+
+    <div style="margin-bottom:12px">
+      <a [routerLink]="['/campaigns', campaignId]" class="text-small text-muted" style="text-decoration:none">← Campaign</a>
+    </div>
+
+    @if (loading()) { <div class="notice">Loading...</div> }
+    @if (!loading() && error()) { <div class="notice notice-error">{{ error() }} <button class="btn btn-sm" (click)="load()">Retry</button></div> }
+
+    @if (!loading() && !error() && item(); as d) {
+
+      <div style="margin-bottom:20px">
+        <div class="page-title">Item <code style="font-size:18px">{{ d.itemId }}</code></div>
+        <div class="page-sub">Campaign: <code>{{ d.campaignId }}</code> · Created {{ fmt(d.createdAt) }}</div>
+      </div>
+
+      <!-- Summary row -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <span class="badge" [class.badge-on]="d.emailOpenEnabled" [class.badge-off]="!d.emailOpenEnabled">
+          Email Opens: {{ d.emailOpenEnabled ? d.openCount : 'off' }}
+        </span>
+        <span class="badge" [class.badge-on]="d.timeTrackerEnabled" [class.badge-off]="!d.timeTrackerEnabled">
+          Sessions: {{ d.timeTrackerEnabled ? d.sessionCount : 'off' }}
+        </span>
+        @if (d.timeTrackerEnabled && d.sessionCount > 0) {
+          <span class="badge badge-on">Avg: {{ avgDur(d) }}</span>
+        }
+        <span class="badge">{{ d.redirectLinks.length }} redirect link{{ d.redirectLinks.length !== 1 ? 's' : '' }}</span>
+      </div>
+
+      <!-- URLs section -->
+      <div class="section-box" style="margin-bottom:14px">
+        <div class="section-box__head"><span class="section-box__title">Tracking URLs</span></div>
+        <div class="section-box__body">
+          <table>
+            <thead><tr><th>Type</th><th>URL</th><th></th></tr></thead>
+            <tbody>
+              @if (d.emailOpenUrl) {
+<!--                <tr>-->
+<!--                  <td class="text-small">Open Pixel</td>-->
+<!--                  <td><code>{{ d.emailOpenUrl }}</code></td>-->
+<!--                  <td><app-copy-btn [text]="d.emailOpenUrl" label="Copy" /></td>-->
+<!--                </tr>-->
+                <tr>
+                  <td class="text-small">Open Snippet</td>
+                  <td><code>{{ d.emailPixelSnippet }}</code></td>
+                  <td><app-copy-btn [text]="d.emailPixelSnippet!" label="Copy" /></td>
+                </tr>
+              }
+              @if (d.timeTrackerUrl) {
+                <tr>
+                  <td class="text-small">Time Tracker</td>
+                  <td><code>{{ d.timeTrackerUrl }}</code></td>
+                  <td><app-copy-btn [text]="d.timeTrackerUrl" label="Copy" /></td>
+                </tr>
+              }
+              @if (!d.emailOpenUrl && !d.timeTrackerUrl) {
+                <tr><td colspan="3" class="text-muted text-small">No tracking URLs enabled for this campaign.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Email opens -->
+      @if (d.emailOpenEnabled) {
+        <div class="section-box" [class.section-enabled]="d.openCount > 0" [class.section-disabled]="d.openCount === 0" style="margin-bottom:14px">
+          <div class="section-box__head">
+            <span class="section-box__title">Email Open Events</span>
+            <span class="badge" [class.badge-on]="d.openCount > 0">{{ d.openCount }} open{{ d.openCount !== 1 ? 's' : '' }}</span>
+          </div>
+          <div class="section-box__body" style="padding:0">
+            @if (d.openEvents.length === 0) {
+              <div class="empty-state" style="border:none;border-radius:0">No opens recorded yet.</div>
+            } @else {
+              <table>
+                <thead><tr><th>Time</th><th>IP</th><th>Device</th></tr></thead>
+                <tbody>
+                  @for (ev of d.openEvents; track ev.timestamp) {
+                    <tr>
+                      <td class="text-small mono">{{ fmt(ev.timestamp) }}</td>
+                      <td class="text-small mono">{{ ev.ip }}</td>
+                      <td class="text-small">{{ ua(ev.userAgent) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Time tracking sessions -->
+      @if (d.timeTrackerEnabled) {
+        <div class="section-box" [class.section-enabled]="d.sessionCount > 0" [class.section-disabled]="d.sessionCount === 0" style="margin-bottom:14px">
+          <div class="section-box__head">
+            <span class="section-box__title">Time Tracking Sessions</span>
+            <span class="badge" [class.badge-on]="d.sessionCount > 0">{{ d.sessionCount }} session{{ d.sessionCount !== 1 ? 's' : '' }}</span>
+          </div>
+          <div class="section-box__body" style="padding:0">
+            @if (d.sessions.length === 0) {
+              <div class="empty-state" style="border:none;border-radius:0">No sessions recorded yet.</div>
+            } @else {
+              <table>
+                <thead><tr><th>Session ID</th><th>Started</th><th>Duration</th><th>IP</th></tr></thead>
+                <tbody>
+                  @for (s of d.sessions; track s.sessionId) {
+                    <tr>
+                      <td><code>{{ s.sessionId.substring(0,12) }}...</code></td>
+                      <td class="text-small">{{ fmt(s.startedAt) }}</td>
+                      <td class="text-small"><strong>{{ fmtDur(s.durationSeconds) }}</strong></td>
+                      <td class="text-small mono">{{ s.ip }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Redirect links -->
+      @if (d.redirectLinks.length > 0) {
+        <div class="section-box">
+          <div class="section-box__head"><span class="section-box__title">Redirect Links</span></div>
+          <div class="section-box__body" style="padding:0">
+            @for (link of d.redirectLinks; track link.hash) {
+              <div style="border-bottom:1px solid #eee">
+                <!-- Link row -->
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer"
+                     (click)="toggleLink(link)">
+                  <span style="font-weight:600;font-size:13px;min-width:80px">{{ link.label }}</span>
+                  <code style="flex:1">{{ link.shortUrl }}</code>
+                  <div style="display:flex;gap:5px;flex-wrap:wrap">
+                    @if (link.isPasswordProtected) { <span class="badge">🔒</span> }
+                    @if (link.viewOnce)            { <span class="badge">1×</span> }
+                    @if (link.isExpired)           { <span class="badge badge-off">Expired</span> }
+                    @if (link.noForwarding)        { <span class="badge">No Fwd</span> }
+                  </div>
+                  <span class="badge" [class.badge-on]="link.clickCount > 0">{{ link.clickCount }} click{{ link.clickCount !== 1 ? 's' : '' }}</span>
+                  <app-copy-btn [text]="link.shortUrl" (click)="$event.stopPropagation()" />
+                  <span class="text-muted text-small">{{ openLink()?.hash === link.hash ? '▲' : '▼' }}</span>
+                </div>
+
+                <!-- Click events dropdown -->
+                @if (openLink()?.hash === link.hash) {
+                  <div style="background:#fafafa;border-top:1px solid #eee">
+                    @if (link.clickEvents.length === 0) {
+                      <div class="text-small text-muted" style="padding:12px 16px">No clicks yet.</div>
+                    } @else {
+                      <table>
+                        <thead><tr><th>Time</th><th>IP</th><th>Device</th></tr></thead>
+                        <tbody>
+                          @for (ev of link.clickEvents; track ev.timestamp) {
+                            <tr>
+                              <td class="text-small mono">{{ fmt(ev.timestamp) }}</td>
+                              <td class="text-small mono">{{ ev.ip }}</td>
+                              <td class="text-small">{{ ua(ev.userAgent) }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -1,0 +1,128 @@
+<div class="page" >
+  <div class="container">
+    <div class="page-title">New Campaign</div>
+    <div class="page-sub">Define tracking settings. You can create multiple items per campaign later.</div>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="section-box" style="margin-bottom:14px">
+        <div class="section-box__head">
+          <span class="section-box__title">Campaign Name</span>
+          <span class="text-small text-muted">Optional</span>
+        </div>
+        <div class="section-box__body">
+          <input type="text" formControlName="name" placeholder="e.g. April Job Applications" style="max-width:360px">
+        </div>
+      </div>
+      <div class="section-box" style="margin-bottom:14px"
+           [class.section-enabled]="form.get('emailOpenLink')?.value || form.get('timeTrackingLink')?.value"
+           [class.section-disabled]="!form.get('emailOpenLink')?.value && !form.get('timeTrackingLink')?.value">
+        <div class="section-box__head">
+          <span class="section-box__title">Tracking Features</span>
+        </div>
+        <div class="section-box__body" style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:flex-start;gap:14px;padding:12px;border:1px solid #eee;border-radius:3px">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:13px;margin-bottom:2px">Email Open Tracking</div>
+              <div class="text-small text-muted">Embed a 1×1 pixel image in your email. Detects when email is opened and for how long (streaming connection).</div>
+            </div>
+            <label class="toggle-wrap">
+              <input type="checkbox" formControlName="emailOpenLink">
+              <span class="track"></span>
+            </label>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:14px;padding:12px;border:1px solid #eee;border-radius:3px">
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:13px;margin-bottom:2px">Time Tracking (Streaming GIF)</div>
+              <div class="text-small text-muted">Same pixel approach — connection stays open while email is viewed. Duration = connection lifetime.</div>
+            </div>
+            <label class="toggle-wrap">
+              <input type="checkbox" formControlName="timeTrackingLink">
+              <span class="track"></span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+      <div class="section-box" style="margin-bottom:14px"
+           [class.section-enabled]="links.length > 0"
+           [class.section-disabled]="links.length === 0">
+        <div class="section-box__head">
+          <span class="section-box__title">Redirect Links <span class="badge" style="margin-left:6px">{{ links.length }}</span></span>
+          <button type="button" class="btn btn-sm" (click)="addLink()">+ Add Link</button>
+        </div>
+        <div class="section-box__body">
+          @if (links.length === 0) {
+            <div class="text-small text-muted" style="padding:8px 0">
+              No redirect links. Click "Add Link" to add tracked short links (portfolio, LinkedIn, etc).
+            </div>
+          }
+
+          @if (links.length > 0) {
+            <!-- Header row -->
+            <div style="display:grid;grid-template-columns:110px 1fr 140px 80px 90px 32px;gap:6px;padding:0 0 6px;border-bottom:1px solid #eee;margin-bottom:8px">
+              <span class="text-small text-muted">Label</span>
+              <span class="text-small text-muted">Original URL *</span>
+              <span class="text-small text-muted">Password</span>
+              <span class="text-small text-muted" style="text-align:center">View Once</span>
+              <span class="text-small text-muted" style="text-align:center">No Forward</span>
+              <span></span>
+            </div>
+
+            <div formArrayName="redirectLinks" style="display:flex;flex-direction:column;gap:6px">
+              @for (g of linkGroups; track $index) {
+                <div [formGroupName]="$index"
+                     style="display:grid;grid-template-columns:110px 1fr 140px 80px 90px 32px;gap:6px;align-items:start;padding:8px;background:#fafafa;border:1px solid #eee;border-radius:3px">
+
+                  <input type="text" formControlName="label" placeholder="Label" style="font-size:12px">
+
+                  <div>
+                    <input type="url" formControlName="originalUrl" placeholder="https://..."
+                           style="font-size:12px"
+                           [class.invalid]="ctrl(g,'originalUrl')?.invalid && ctrl(g,'originalUrl')?.touched">
+                    @if (ctrl(g,'originalUrl')?.invalid && ctrl(g,'originalUrl')?.touched) {
+                      <div style="font-size:11px;color:#e33;margin-top:2px">Valid URL required</div>
+                    }
+                  </div>
+
+                  <input type="password" formControlName="password" placeholder="Optional" style="font-size:12px" autocomplete="new-password">
+
+                  <div style="display:flex;justify-content:center;padding-top:5px">
+                    <label class="mini-toggle">
+                      <input type="checkbox" formControlName="viewOnce">
+                      <span class="mini-track"></span>
+                    </label>
+                  </div>
+
+                  <div style="display:flex;justify-content:center;padding-top:5px">
+                    <label class="mini-toggle">
+                      <input type="checkbox" formControlName="noForwarding">
+                      <span class="mini-track"></span>
+                    </label>
+                  </div>
+
+                  <button type="button" class="btn btn-sm" style="color:#e33;border-color:#e33;padding:4px 6px" (click)="removeLink($index)">✕</button>
+
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Footer -->
+      @if (error()) {
+        <div class="notice notice-error">{{ error() }}</div>
+      }
+
+      <div style="display:flex;align-items:center;gap:10px">
+        <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+          @if (submitting()) { Creating... } @else { Create Campaign }
+        </button>
+        <a routerLink="/campaigns" class="btn">Cancel</a>
+        <span class="text-small text-muted" style="margin-left:4px">
+          On submit you'll be taken to the campaign page where you can create items.
+        </span>
+      </div>
+
+    </form>
+  </div>
+</div>

@@ -1,0 +1,87 @@
+<div class="page">
+
+    <div class="container" >
+
+        <div class="flex items-center justify-between mb-2">
+            <div>
+                <div class="page-title">Campaigns</div>
+                <div class="page-sub">Each campaign defines tracking config. Create items per email send.</div>
+            </div>
+            <a routerLink="/create" class="new-campaign">+ New Campaign</a>
+        </div>
+
+        @if (loading()) {
+            <div class="notice">Loading...</div>
+        }
+
+        @if (!loading() && error()) {
+            <div class="notice notice-error">
+                {{ error() }}
+                <button class="btn btn-sm" style="margin-left:8px" (click)="load()">Retry</button>
+            </div>
+        }
+
+        @if (!loading() && !error() && campaigns().length === 0) {
+            <div class="empty-state">
+                No campaigns yet. <a routerLink="/create">Create your first one</a>.
+            </div>
+        }
+
+        @if (!loading() && !error() && campaigns().length > 0) {
+            <div class="section-box">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Campaign ID</th>
+                        <th>Name</th>
+                        <th>Created</th>
+                        <th>Email Open</th>
+                        <th>Time Track</th>
+                        <th>Links</th>
+                        <th>Items</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        @for (c of campaigns();track c.campaignId) {
+                            <tr>
+                                <td>
+                                    <a [routerLink]="['/campaigns', c.campaignId]" class="mono"
+                                       style="text-decoration:none;color:#1d4ed8">
+                                        {{ c.campaignId }}
+                                    </a>
+                                </td>
+                                <td>{{ c.name || '—' }}</td>
+                                <td class="text-small text-muted">{{ fmt(c.createdAt) }}</td>
+                                <td>
+                  <span [class]="c.emailOpenEnabled ? 'badge badge-on' : 'badge badge-off'">
+                    {{ c.emailOpenEnabled ? 'On' : 'Off' }}
+                  </span>
+                                </td>
+                                <td>
+                  <span [class]="c.timeTrackerEnabled ? 'badge badge-on' : 'badge badge-off'">
+                    {{ c.timeTrackerEnabled ? 'On' : 'Off' }}
+                  </span>
+                                </td>
+                                <td>{{ c.redirectLinksCount }}</td>
+                                <td>{{ c.itemCount }}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger"
+                                            [disabled]="deleting() === c.campaignId"
+                                            (click)="delete(c.campaignId)">
+                                        @if (deleting() === c.campaignId) {
+                                        } @else {
+                                            Delete
+                                        }
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        }
+
+    </div >
+</div>
