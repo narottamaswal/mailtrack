@@ -1,19 +1,1 @@
-app:
-  frontend-url: http://localhost:4200
-  base-url: http://localhost:8080
-  redirect-url: http://localhost:4200
 
-spring:
-  datasource:
-    url: jdbc:postgresql://ep-aged-field-amuqpw4j-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
-    username: neondb_owner
-    password: npg_McQLdJgH9m0D
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: 312431328245-hqj892itvncuudkvfq3sfeinfq69v6ht.apps.googleusercontent.com
-            client-secret: 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
-            redirect-uri: http://localhost:8080/login/oauth2/code/google
-            scope: openid,profile,email
