@@ -83,8 +83,8 @@ public class ItemService {
         String cid = c.getCampaignId();
         String iid = item.getItemId();
 
-        String pixelUrl   = c.isEmailOpenEnabled()   ? baseUrl + "/pixel/"   + cid + "/" + iid : null;
-        String trackerUrl = c.isTimeTrackerEnabled()  ? baseUrl + "/tracker/" + cid + "/" + iid : null;
+        String pixelUrl   = c.isEmailOpenEnabled()   ? baseUrl + "/pixel/"   + cid + "/" + iid +"/img.png": null;
+        String trackerUrl = c.isTimeTrackerEnabled()  ? baseUrl + "/tracker/" + cid + "/" + iid +"/img.png": null;
         String snippet    = pixelUrl != null
                 ? "<img src=\"" + pixelUrl + "\" width=\"1\" height=\"1\" alt=\"\" style=\"display:none;border:0;\">"
                 : null;
