@@ -9,6 +9,7 @@ import com.mailtrack.repository.RedirectLinkRepository;
 import com.mailtrack.repository.TrackerSessionRepository;
 import com.mailtrack.util.IdGenerator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -137,6 +139,7 @@ public class ItemService {
     private boolean isBotOrProxy(String userAgent) {
         if (userAgent == null || userAgent.isBlank()) return true;
         String ua = userAgent.toLowerCase();
+        log.info("User agent "+ua);
         return ApplicationConstants.BOT_AGENTS.stream().anyMatch(bot -> ua.contains(bot.toLowerCase()));
     }
     public void recordEmailOpen(String campaignId, String itemId, String ip, String ua) {
@@ -144,8 +147,6 @@ public class ItemService {
         if(isBot) return;
 
         itemRepo.findById(itemId).ifPresent(item -> {
-            long secondsSinceSent = ChronoUnit.SECONDS.between(item.getCreatedAt(), LocalDateTime.now());
-            if (secondsSinceSent < ApplicationConstants.PREFETCH_WINDOW_SECONDS) return;
 
             if (item.getCampaign().getCampaignId().equals(campaignId)
                     && item.getCampaign().isEmailOpenEnabled()) {

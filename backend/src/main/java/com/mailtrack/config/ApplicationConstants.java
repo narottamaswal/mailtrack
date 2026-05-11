@@ -1,5 +1,6 @@
 package com.mailtrack.config;
 
+import java.util.Base64;
 import java.util.List;
 
 public class ApplicationConstants {
@@ -18,6 +19,9 @@ public class ApplicationConstants {
     public static final byte[] KEEP_ALIVE = {
             0x21, (byte)0xFE, 0x01, 0x20, 0x00  // comment = single space character
     };
+    public static final byte[] PIXEL = Base64.getDecoder().decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+    );
     public static final byte[] GIF = {
             0x47,0x49,0x46,0x38,0x39,0x61, 0x01,0x00,0x01,0x00,
             (byte)0x80,0x00,0x00, (byte)0xFF,(byte)0xFF,(byte)0xFF, 0x00,0x00,0x00,
