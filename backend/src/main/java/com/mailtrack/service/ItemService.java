@@ -136,16 +136,8 @@ public class ItemService {
         Item item = requireItem(campaignId, itemId);
         itemRepo.delete(item);
     }
-    private boolean isBotOrProxy(String userAgent) {
-        if (userAgent == null || userAgent.isBlank()) return true;
-        String ua = userAgent.toLowerCase();
-        log.info("User agent "+ua);
-        return ApplicationConstants.BOT_AGENTS.stream().anyMatch(bot -> ua.contains(bot.toLowerCase()));
-    }
-    public void recordEmailOpen(String campaignId, String itemId, String ip, String ua) {
-        boolean isBot = isBotOrProxy(ua);
-        if(isBot) return;
 
+    public void recordEmailOpen(String campaignId, String itemId, String ip, String ua) {
         itemRepo.findById(itemId).ifPresent(item -> {
 
             if (item.getCampaign().getCampaignId().equals(campaignId)
