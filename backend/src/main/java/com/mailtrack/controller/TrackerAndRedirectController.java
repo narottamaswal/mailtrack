@@ -59,7 +59,7 @@ public class TrackerAndRedirectController {
         }
     }
 
-    @GetMapping("/pixel/{campaignId}/{itemId}")
+    @GetMapping("/pixel/{campaignId}/{itemId}/img.png")
     public void pixel(
             @PathVariable String campaignId, @PathVariable String itemId,
             HttpServletRequest req, HttpServletResponse res) throws Exception {
@@ -76,7 +76,7 @@ public class TrackerAndRedirectController {
     }
 
 
-    @GetMapping("/tracker/{campaignId}/{itemId}")
+    @GetMapping("/tracker/{campaignId}/{itemId}/img.gif")
     public void stream(
             @PathVariable String campaignId,
             @PathVariable String itemId,
