@@ -6,17 +6,25 @@ import com.mailtrack.service.ItemService;
 import com.mailtrack.util.IpUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.NoSuchElementException;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import javax.imageio.ImageIO;
 
+@Slf4j
 @RestController
 public class TrackerAndRedirectController {
 
@@ -67,13 +75,43 @@ public class TrackerAndRedirectController {
         String ip = IpUtil.getClientIp(req);
 
         service.recordEmailOpen(campaignId, itemId, ip, userAgent != null ?userAgent : "");
+        byte[] image = generateMImage();
+        log.info("Image: {}", Arrays.toString(image));
         return ResponseEntity.ok()
                 .header(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate")
                 .header(HttpHeaders.PRAGMA, "no-cache")
                 .contentType(MediaType.IMAGE_PNG)
-                .body(ApplicationConstants.PIXEL);
+                .body(image);
     }
 
+    private byte[] generateMImage() {
+        try {
+            int width = 14, height = 14;
+            BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = img.createGraphics();
+            // Transparent background
+            g.setColor(new Color(0, 0, 0, 0));
+            g.fillRect(0, 0, width, height);
+
+            // Smooth rendering
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            g.setColor(Color.BLACK);
+            g.setFont(new Font("Arial", Font.BOLD, 11));
+            g.drawString("M", 1, 11);
+            g.dispose();
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(img, "png", baos);
+            return baos.toByteArray();
+
+        } catch (Exception e) {
+            return Base64.getDecoder().decode(
+                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+            );
+        }
+    }
 
     @GetMapping("/tracker/{campaignId}/{itemId}/img.png")
     public void stream(
