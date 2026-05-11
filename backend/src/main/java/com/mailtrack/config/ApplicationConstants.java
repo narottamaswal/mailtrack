@@ -1,6 +1,20 @@
 package com.mailtrack.config;
 
+import java.util.List;
+
 public class ApplicationConstants {
+    public static final long PREFETCH_WINDOW_SECONDS = 60;
+    public static final List<String> BOT_AGENTS = List.of(
+            "GoogleImageProxy",
+            "Googlebot",
+            "bingbot",
+            "Yahoo! Slurp",
+            "DuckDuckBot",
+            "facebookexternalhit",
+            "Twitterbot",
+            "LinkedInBot",
+            "AppleMailImageProxy"  // Apple also proxies images in Mail app
+    );
     public static final byte[] KEEP_ALIVE = {
             0x21, (byte)0xFE, 0x01, 0x20, 0x00  // comment = single space character
     };

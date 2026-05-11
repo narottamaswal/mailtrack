@@ -1,5 +1,6 @@
 package com.mailtrack.service;
 
+import com.mailtrack.config.ApplicationConstants;
 import com.mailtrack.dto.request.VerifyPasswordRequest;
 import com.mailtrack.dto.response.*;
 import com.mailtrack.model.*;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -131,9 +134,19 @@ public class ItemService {
         Item item = requireItem(campaignId, itemId);
         itemRepo.delete(item);
     }
-
+    private boolean isBotOrProxy(String userAgent) {
+        if (userAgent == null || userAgent.isBlank()) return true;
+        String ua = userAgent.toLowerCase();
+        return ApplicationConstants.BOT_AGENTS.stream().anyMatch(bot -> ua.contains(bot.toLowerCase()));
+    }
     public void recordEmailOpen(String campaignId, String itemId, String ip, String ua) {
+        boolean isBot = isBotOrProxy(ua);
+        if(isBot) return;
+
         itemRepo.findById(itemId).ifPresent(item -> {
+            long secondsSinceSent = ChronoUnit.SECONDS.between(item.getCreatedAt(), LocalDateTime.now());
+            if (secondsSinceSent < ApplicationConstants.PREFETCH_WINDOW_SECONDS) return;
+
             if (item.getCampaign().getCampaignId().equals(campaignId)
                     && item.getCampaign().isEmailOpenEnabled()) {
                 item.getOpenEvents().add(OpenEvent.builder()

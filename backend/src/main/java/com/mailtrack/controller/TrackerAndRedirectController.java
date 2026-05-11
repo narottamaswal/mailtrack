@@ -63,10 +63,12 @@ public class TrackerAndRedirectController {
     public void pixel(
             @PathVariable String campaignId, @PathVariable String itemId,
             HttpServletRequest req, HttpServletResponse res) throws Exception {
+        String userAgent = req.getHeader("User-Agent");
+        String ip = IpUtil.getClientIp(req);
 
-        service.recordEmailOpen(campaignId, itemId, IpUtil.getClientIp(req),
-                req.getHeader("User-Agent") != null ? req.getHeader("User-Agent") : "");
+        service.recordEmailOpen(campaignId, itemId, ip, userAgent != null ?userAgent : "");
         res.setContentType("image/gif");
+
         res.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, private");
         res.setHeader(HttpHeaders.PRAGMA, "no-cache");
         res.setHeader("Expires", "0");
@@ -82,7 +84,7 @@ public class TrackerAndRedirectController {
             @PathVariable String itemId,
             HttpServletRequest req,
             HttpServletResponse res) {
-
+        String userAgent = req.getHeader("User-Agent");
         String ip = IpUtil.getClientIp(req);
         TrackerSession session;
         try {
