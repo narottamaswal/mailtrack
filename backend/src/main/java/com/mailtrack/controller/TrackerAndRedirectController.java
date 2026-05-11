@@ -59,7 +59,7 @@ public class TrackerAndRedirectController {
         }
     }
 
-    @GetMapping("/pixel/{campaignId}/{itemId}/img.png")
+    @GetMapping("/pixel/{campaignId}/{itemId}/img.gif")
     public void pixel(
             @PathVariable String campaignId, @PathVariable String itemId,
             HttpServletRequest req, HttpServletResponse res) throws Exception {
